@@ -1,0 +1,22 @@
+! IEEE Line Constructions for Test Feeders
+
+! 1-phase line codes (for 1/0 ACSR)
+New LineCode.1ph_1_0 nphas=1 units=km r1=0.3360 x1=0.4230 c1=4.9942
+
+! 3-phase line codes (for 1/0 ACSR) - 4-wire
+New LineCode.3ph_1_0 nphas=3 units=km r1=0.3360 x1=0.4230 c1=4.9942 r0=0.6512 x0=1.7254 c0=1.5888
+
+! 3-phase line codes (for 4/0 ACSR) - 4-wire
+New LineCode.3ph_4_0 nphas=3 units=km r1=0.1590 x1=0.3420 c1=5.2736 r0=0.4770 x0=1.6080 c0=1.7806
+
+! 3-phase line codes (for 336 kcmil AAAC)
+New LineCode.3ph_336AAAC nphas=3 units=km R1=0.0941 X1=0.3180 C1=5.5522 R0=0.2823 X0=1.4858 C0=1.8852
+
+! 3-phase line codes (for 250 kcmil AAAC)
+New LineCode.3ph_250AAAC nphas=3 units=km R1=0.1510 X1=0.3320 C1=5.4086 R0=0.4530 X0=1.5276 C0=1.8206
+
+! Concentric neutral cables (15 kV)
+New LineCode.CN15_1_0 nphas=1 units=ft R1=0.5961 X1=0.4074 C1=8.0173
+
+! Concentric neutral cables (15 kV, 3-phase)
+New LineCode.CN15_3ph_1_0 nphas=3 units=ft R1=0.5961 X1=0.4074 C1=8.0173 R0=0.7800 X0=1.6045 C0=3.0692

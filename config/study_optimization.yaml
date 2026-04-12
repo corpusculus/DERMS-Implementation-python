@@ -1,0 +1,60 @@
+# DERMS MVP — Optimization-Based Control Study Config
+# Runs 24-hour QSTS with convex optimization Volt-VAR control
+
+study:
+  name: "mvp_optimization_study"
+  description: "24-hour QSTS with optimization-based Volt-VAR control"
+
+# Feeder to use
+feeder_config: "config/feeder_dev_ieee13.yaml"
+
+# Scenario files
+profiles:
+  load_profile: "data/load_profiles/load_24h.csv"
+  pv_profile: "data/pv_profiles/pv_clear_sky_24h.csv"
+  der_config: "data/der_configs/ders_ieee13.csv"
+
+# Controller mode
+controller:
+  mode: "optimization"
+
+# Optimization parameters
+optimization:
+  # Objective function weights
+  alpha_violation: 1000.0     # Voltage violation penalty
+  beta_q_effort: 1.0          # Reactive power effort penalty
+  gamma_p_curtail: 100.0      # Active power curtailment penalty
+
+  # Voltage limits
+  v_min: 0.95
+  v_max: 1.05
+
+  # Solver settings
+  solver: "ECOS"              # ECOS (fast), OSQP (robust), SCS (accurate)
+  max_iterations: 1000
+  tolerance: 1e-6
+
+  # Fallback
+  enable_fallback: true
+
+  # Sensitivity estimation
+  sensitivity:
+    q_perturbation_pct: 0.10
+    p_perturbation_pct: 0.05
+    min_perturbation: 1.0
+    cache_sensitivities: true
+    cache_valid_minutes: 30
+
+# Voltage control thresholds (used by fallback heuristic)
+control_thresholds:
+  q_activation_pu: 1.03      # Start reactive absorption above this voltage
+  curtailment_pu: 1.05       # Allow active curtailment above this voltage
+  deadband_pu: 0.005         # No action within ±deadband of 1.0 pu
+  q_ramp_max_kvar: 50.0      # Max Q change per timestep
+  p_ramp_max_kw: 20.0        # Max P change per timestep
+
+# Output
+output:
+  base_dir: "results"
+  qsts_dir: "results/optimization"
+  detailed_voltage_logging: true

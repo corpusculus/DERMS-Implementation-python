@@ -1,0 +1,55 @@
+# DERMS MVP — Battery Control Study Config
+# Runs 24-hour QSTS with battery storage and heuristic Volt-VAR control
+
+study:
+  name: "mvp_battery_study"
+  description: "24-hour QSTS with battery storage and heuristic control"
+
+# Feeder to use
+feeder_config: "config/feeder_dev_ieee13.yaml"
+
+# Scenario files
+profiles:
+  load_profile: "data/load_profiles/load_24h.csv"
+  pv_profile: "data/pv_profiles/pv_clear_sky_24h.csv"
+  der_config: "data/der_configs/ders_ieee13.csv"
+  battery_config: "data/battery_configs/battery_ieee13.csv"
+
+# Controller mode
+controller:
+  mode: "heuristic"  # Options: baseline, heuristic, optimization
+
+# Battery configuration
+battery:
+  # Physical specifications
+  capacity_kwh: 50       # Energy capacity (kWh) - reduced from 200
+  power_kw: 25           # Power rating (kW) - reduced from 100 to prevent voltage collapse on single-phase laterals
+  efficiency: 0.95        # Round-trip efficiency
+
+  # SOC limits
+  soc_init: 0.5           # Initial SOC (50%)
+  soc_min: 0.1            # Minimum SOC (10%)
+  soc_max: 0.9            # Maximum SOC (90%)
+
+  # Control strategy
+  charge_threshold_pv_excess_pct: 0.2   # Charge when PV > load + 20%
+  discharge_voltage_pu: 1.06           # Discharge for voltage support above this (raised from 1.04 to prevent premature discharge)
+  charge_window_start_h: 8             # Earliest charging hour
+  charge_window_end_h: 16              # Latest charging hour
+  power_factor: 1.0                    # Unity power factor
+
+  # Coordination
+  prioritize_voltage_support: true      # Discharge for voltage support even outside window
+
+# Voltage control thresholds (for PV inverters)
+control_thresholds:
+  q_activation_pu: 1.03      # Start reactive absorption above this voltage
+  curtailment_pu: 1.05       # Allow active curtailment above this voltage
+  deadband_pu: 0.005         # No action within ±deadband of 1.0 pu
+  q_ramp_max_kvar: 50.0      # Max Q change per timestep
+  p_ramp_max_kw: 20.0        # Max P change per timestep
+
+# Output
+output:
+  base_dir: "results"
+  qsts_dir: "results/battery"

@@ -1,0 +1,23 @@
+# DERMS feeder config — Development feeder (IEEE 13-bus)
+# Used for rapid iteration and debugging.
+
+feeder:
+  name: ieee13
+  description: "IEEE 13-bus test feeder — development / debug feeder"
+  master_file: "feeder_models/ieee13/IEEE13Nodeckt.dss"
+
+simulation:
+  time_step_minutes: 5
+  horizon_hours: 24
+  base_kv: 4.16  # Feeder base voltage in kV (substation LV side)
+  frequency_hz: 60
+
+voltage_limits:
+  lower: 0.95   # pu
+  upper: 1.05   # pu
+  soft_lower: 0.97   # pu — warning band (informational)
+  soft_upper: 1.03   # pu — triggers reactive power support first
+
+output:
+  snapshot_dir: "results/baseline"
+  qsts_dir: "results/baseline"

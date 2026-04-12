@@ -1,0 +1,23 @@
+# DERMS feeder config — Final demonstration feeder (IEEE 123-bus)
+# This feeder is used for portfolio-grade final results.
+
+feeder:
+  name: ieee123
+  description: "IEEE 123-bus test feeder — final demonstration feeder"
+  master_file: "feeder_models/ieee123/IEEE123Master.dss"
+
+simulation:
+  time_step_minutes: 5
+  horizon_hours: 24
+  base_kv: 4.16   # Adjust to actual feeder base if different
+  frequency_hz: 60
+
+voltage_limits:
+  lower: 0.95
+  upper: 1.05
+  soft_lower: 0.97
+  soft_upper: 1.03
+
+output:
+  snapshot_dir: "results/baseline"
+  qsts_dir: "results/baseline"

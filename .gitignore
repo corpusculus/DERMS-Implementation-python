@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.eggs/
+
+# Environments
+.env
+.venv
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Results (large output files — store samples only)
+results/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.claude/
+.codex/
+.conductor/
+
+# pytest
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Worktrees
+.worktrees/
+
+# Logs
+*.log
+
+# Private split-out website
+derms-teaching/
+vercel.json
+CLAUDE.md
+PRD.md
+TODO.md

@@ -1,0 +1,37 @@
+# DERMS MVP — Top-level study config
+# References feeder, scenario, controller mode, and output path.
+
+study:
+  name: "mvp_baseline_study"
+  description: "24-hour quasi-static baseline study — MVP Phase 1"
+
+# Feeder to use — swap in feeder_final_ieee123.yaml for production runs
+feeder_config: "config/feeder_dev_ieee13.yaml"
+
+# Scenario files (used from Phase 1 onward)
+profiles:
+  load_profile: "data/load_profiles/load_24h.csv"
+  pv_profile: "data/pv_profiles/pv_clear_sky_24h.csv"
+
+# DER placement file (used from Phase 2 onward)
+der_config: "data/der_configs/ders_ieee13.csv"
+
+# Controller mode:
+#   baseline      — no DERMS intervention
+#   heuristic     — threshold-based Volt-VAR
+#   optimization  — centralized OPF-style dispatch
+controller:
+  mode: "baseline"
+
+# Voltage control thresholds (used by heuristic and optimization controllers)
+control_thresholds:
+  q_activation_pu: 1.03    # Start reactive absorption above this voltage
+  curtailment_pu: 1.05     # Allow active curtailment above this voltage
+  deadband_pu: 0.005       # No action within ±deadband of 1.0 pu
+
+# Output
+output:
+  base_dir: "results"
+  snapshot_dir: "results/baseline"
+  qsts_dir: "results/baseline"
+  detailed_voltage_logging: true

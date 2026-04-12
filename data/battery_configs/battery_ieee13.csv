@@ -1,0 +1,3 @@
+id,bus,phases,capacity_kwh,power_kw,soc_init,control_enabled
+battery_001,650,3,50,25,0.5,True
+battery_002,632,3,50,25,0.5,True

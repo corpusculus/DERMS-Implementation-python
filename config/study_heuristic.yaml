@@ -1,0 +1,34 @@
+# DERMS MVP — Heuristic Control Study Config
+# Runs 24-hour QSTS with Volt-VAR control and P curtailment fallback
+
+study:
+  name: "mvp_heuristic_study"
+  description: "24-hour QSTS with heuristic Volt-VAR control"
+
+# Feeder to use
+feeder_config: "config/feeder_dev_ieee13.yaml"
+
+# Scenario files
+profiles:
+  load_profile: "data/load_profiles/load_24h.csv"
+  pv_profile: "data/pv_profiles/pv_clear_sky_24h.csv"
+  der_config: "data/der_configs/ders_ieee13.csv"
+
+# Controller mode
+controller:
+  mode: "heuristic"
+
+# Voltage control thresholds
+control_thresholds:
+  q_activation_pu: 1.03      # Start reactive absorption above this voltage
+  curtailment_pu: 1.05       # Allow active curtailment above this voltage
+  deadband_pu: 0.005         # No action within ±deadband of 1.0 pu
+  q_ramp_max_kvar: 50.0      # Max Q change per timestep
+  p_ramp_max_kw: 20.0        # Max P change per timestep
+
+# Output
+output:
+  base_dir: "results"
+  snapshot_dir: "results/baseline"
+  qsts_dir: "results/heuristic"
+  detailed_voltage_logging: true
