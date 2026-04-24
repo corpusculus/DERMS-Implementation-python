@@ -17,6 +17,7 @@ This script:
 import argparse
 import pathlib
 import sys
+from datetime import datetime
 from typing import Any
 
 import numpy as np
@@ -51,10 +52,12 @@ from src.analysis.plots import create_baseline_plots
 
 # Control layer imports
 from src.control import (
+    DERContainer,
     load_ders_from_csv,
     read_der_state,
     apply_setpoints,
     CommandLogger,
+    summarize_command_log,
     HeuristicController,
     HeuristicConfig,
     OptimizationController,
@@ -80,6 +83,19 @@ except ImportError:
 
 
 _LOAD_BASE_SNAPSHOT: dict[str, tuple[float, float]] = {}
+
+
+def _snapshot_der_states(der_container: DERContainer) -> dict[str, dict[str, float]]:
+    """Capture DER runtime state for command audit rows."""
+    return {
+        der.id: {
+            "p_avail_kw": der.p_avail_kw,
+            "p_dispatch_kw": der.p_dispatch_kw,
+            "q_kvar": der.q_kvar,
+            "v_local_pu": der.v_local_pu,
+        }
+        for der in der_container.ders
+    }
 
 
 def load_profile(
@@ -541,6 +557,7 @@ def run_qsts(
         if controller is not None and der_container is not None:
             # Read DER states from OpenDSS
             read_der_state(der_container)
+            der_states_before = _snapshot_der_states(der_container)
 
             # Compute commands
             q_commands, p_commands = controller.compute_commands(
@@ -563,6 +580,8 @@ def run_qsts(
             try:
                 solve_power_flow()
                 voltages_after = get_bus_voltages()
+                read_der_state(der_container)
+                der_states_after = _snapshot_der_states(der_container)
             except RuntimeError as e:
                 print(f"\nWarning: Controlled solve failed at t={t_hour:.2f}h: {e}. Reverting commands.")
                 q_commands = {der.id: 0.0 for der in der_container.enabled()}
@@ -570,14 +589,23 @@ def run_qsts(
                 apply_results = apply_setpoints(der_container, q_commands, p_commands)
                 solve_power_flow()
                 voltages_after = get_bus_voltages()
+                read_der_state(der_container)
+                der_states_after = _snapshot_der_states(der_container)
 
             # Log commands
             if command_logger is not None:
-                from datetime import datetime
                 command_logger.log_batch(
                     der_container, q_commands, p_commands,
                     apply_results, datetime.now(),
-                    voltages_before, voltages_after
+                    voltages_before, voltages_after,
+                    step=step,
+                    time_min=t_min,
+                    time_h=t_hour,
+                    controller_mode=controller_mode,
+                    controller_status=getattr(controller, "last_status", "N/A"),
+                    command_source=controller_mode,
+                    states_before=der_states_before,
+                    states_after=der_states_after,
                 )
 
             # Use post-control voltages for metrics
@@ -681,8 +709,20 @@ def run_qsts(
 
     # Save command log if active
     if command_logger is not None:
-        command_logger.save()
+        command_log_path = command_logger.save()
         print(f"Command log saved to: {command_logger.output_path}")
+        command_summary = summarize_command_log(
+            command_log_path,
+            time_step_minutes=time_step,
+        )
+        command_summary_path = command_logger.output_path.with_name("command_summary.csv")
+        pd.DataFrame(
+            {
+                "metric": list(command_summary.keys()),
+                "value": list(command_summary.values()),
+            }
+        ).to_csv(command_summary_path, index=False)
+        print(f"Command summary saved to: {command_summary_path}")
 
     # Print battery summary if active
     if battery_controller is not None:

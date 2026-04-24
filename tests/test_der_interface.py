@@ -263,8 +263,8 @@ def test_apply_setpoints_batch(pv_integration):
 
     assert len(results) == 3
     # All should succeed if Q is within capability
-    for der_id, status in results.items():
-        assert status in ["applied", "out_of_range", "failed"]
+    for der_id, result in results.items():
+        assert result.status in ["applied", "out_of_range", "failed"]
 
 
 @pytest.mark.skipif(_SKIP_ALL, reason=_SKIP_MSG)
@@ -284,7 +284,8 @@ def test_apply_setpoints_out_of_range(pv_integration):
 
     results = apply_setpoints(container, q_commands)
 
-    assert results[der.id] == "out_of_range"
+    assert results[der.id].status == "out_of_range"
+    assert results[der.id].q_status == "out_of_range"
 
 
 @pytest.mark.skipif(_SKIP_ALL, reason=_SKIP_MSG)
@@ -298,7 +299,8 @@ def test_apply_setpoints_unknown_der(pv_integration):
 
     results = apply_setpoints(container, q_commands)
 
-    assert results["nonexistent_der"] == "failed"
+    assert results["nonexistent_der"].status == "failed"
+    assert results["nonexistent_der"].q_status == "failed"
 
 
 @pytest.mark.skipif(_SKIP_ALL, reason=_SKIP_MSG)
@@ -353,3 +355,7 @@ def test_read_command_apply_log_cycle(pv_integration, tmp_path):
     assert "der_id" in df.columns
     assert "q_commanded_kvar" in df.columns
     assert "status" in df.columns
+    assert "q_status" in df.columns
+    assert "p_status" in df.columns
+    assert "p_dispatch_after_kw" in df.columns
+    assert "q_after_kvar" in df.columns

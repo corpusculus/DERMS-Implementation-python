@@ -111,6 +111,7 @@ Expected outputs for heuristic:
 - `results/heuristic/qsts_baseline.csv`
 - `results/heuristic/qsts_summary.csv`
 - `results/heuristic/commands.csv`
+- `results/heuristic/command_summary.csv`
 - plot files in `results/heuristic/`
 
 Expected outputs for optimization:
@@ -118,11 +119,12 @@ Expected outputs for optimization:
 - `results/optimization/qsts_baseline.csv`
 - `results/optimization/qsts_summary.csv`
 - `results/optimization/commands.csv`
+- `results/optimization/command_summary.csv`
 - plot files in `results/optimization/`
 
 Interpretation:
 
-The controlled run should show fewer voltage violations than the baseline and record the Q and P actions used to improve feeder performance.
+The controlled run should show fewer voltage violations than the baseline. `commands.csv` is a per-DER simulation audit log with requested setpoints, Q/P-specific apply status, before/after DER state, and before/after local voltage. `command_summary.csv` gives showcase-level command KPIs such as commands sent, failures, out-of-range commands, controlled DER count, reactive energy, and curtailed energy.
 
 ## Step 4: Optional Full Analysis
 

@@ -6,6 +6,7 @@ This module provides functions to:
 - Apply control setpoints (Q, P curtailment) to DERs
 """
 
+from dataclasses import dataclass
 from typing import Any
 
 import pandas as pd
@@ -20,6 +21,30 @@ except ImportError:  # pragma: no cover
 
 from src.control.der_models import DER, DERContainer
 from src.sim.opendss_interface import _require_opendss
+
+
+@dataclass(frozen=True)
+class SetpointApplyResult:
+    """Outcome of applying Q/P commands to one DER.
+
+    The aggregate ``status`` field is retained for quick summaries, while the
+    command-specific fields preserve partial outcomes for audit logs.
+    """
+
+    status: str
+    q_status: str = "not_requested"
+    p_status: str = "not_requested"
+    message: str = ""
+
+    def __str__(self) -> str:
+        """Return aggregate status for display."""
+        return self.status
+
+    def __eq__(self, other: object) -> bool:
+        """Allow legacy comparisons to the aggregate status string."""
+        if isinstance(other, str):
+            return self.status == other
+        return super().__eq__(other)
 
 
 # ---------------------------------------------------------------------------
@@ -156,7 +181,7 @@ def apply_setpoints(
     container: DERContainer,
     q_commands: dict[str, float],
     p_commands: dict[str, float] | None = None,
-) -> dict[str, str]:
+) -> dict[str, SetpointApplyResult]:
     """Apply multiple setpoints to DERs.
 
     Applies reactive power and/or active power curtailment commands
@@ -168,40 +193,73 @@ def apply_setpoints(
         p_commands: Optional DER ID -> P curtailment (kW).
 
     Returns:
-        Dict of DER ID -> status ("applied", "failed", "out_of_range").
+        Dict of DER ID -> SetpointApplyResult. ``result.status`` is one of
+        "applied", "partial", "failed", "out_of_range", or "no_command".
     """
-    results: dict[str, str] = {}
+    results: dict[str, SetpointApplyResult] = {}
+    p_commands = p_commands or {}
+    der_ids = dict.fromkeys([*q_commands.keys(), *p_commands.keys()])
 
-    # Apply Q commands
-    for der_id, q_kvar in q_commands.items():
+    for der_id in der_ids:
         try:
             der = container[der_id]
         except KeyError:
-            results[der_id] = "failed"
+            q_status = "failed" if der_id in q_commands else "not_requested"
+            p_status = "failed" if der_id in p_commands else "not_requested"
+            results[der_id] = SetpointApplyResult(
+                status="failed",
+                q_status=q_status,
+                p_status=p_status,
+                message="DER not found in container",
+            )
             continue
 
-        if not der.can_provide_q(q_kvar):
-            results[der_id] = "out_of_range"
-            continue
+        q_status = "not_requested"
+        p_status = "not_requested"
+        messages: list[str] = []
 
-        if apply_q_setpoint(der, q_kvar):
-            results[der_id] = "applied"
-        else:
-            results[der_id] = "failed"
-
-    # Apply P commands if provided
-    if p_commands:
-        for der_id, p_kw in p_commands.items():
-            try:
-                der = container[der_id]
-            except KeyError:
-                results[der_id] = "failed"
-                continue
-
-            if apply_p_curtailment(der, p_kw):
-                results[der_id] = "applied"
+        if der_id in q_commands:
+            q_kvar = q_commands[der_id]
+            if not der.can_provide_q(q_kvar):
+                q_status = "out_of_range"
+                messages.append("Q command outside inverter capability")
             else:
-                results[der_id] = "failed"
+                q_status = "applied" if apply_q_setpoint(der, q_kvar) else "failed"
+                if q_status == "failed":
+                    messages.append("OpenDSS rejected Q command")
+
+        if der_id in p_commands:
+            p_kw = p_commands[der_id]
+            if p_kw < 0 or p_kw > der.p_avail_kw:
+                p_status = "out_of_range"
+                messages.append("P curtailment outside available range")
+            else:
+                p_status = "applied" if apply_p_curtailment(der, p_kw) else "failed"
+                if p_status == "failed":
+                    messages.append("OpenDSS rejected P curtailment command")
+
+        requested_statuses = [
+            status
+            for status in (q_status, p_status)
+            if status != "not_requested"
+        ]
+        if not requested_statuses:
+            overall_status = "no_command"
+        elif all(status == "applied" for status in requested_statuses):
+            overall_status = "applied"
+        elif any(status == "applied" for status in requested_statuses):
+            overall_status = "partial"
+        elif any(status == "out_of_range" for status in requested_statuses):
+            overall_status = "out_of_range"
+        else:
+            overall_status = "failed"
+
+        results[der_id] = SetpointApplyResult(
+            status=overall_status,
+            q_status=q_status,
+            p_status=p_status,
+            message="; ".join(messages),
+        )
 
     return results
 
