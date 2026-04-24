@@ -319,6 +319,7 @@ def compare_hosting_capacity(
     optimization_config: str | None,
     pv_scales: list[float],
     output_dir: str | pathlib.Path,
+    mode_output_dirs: dict[str, str | pathlib.Path] | None = None,
 ) -> dict[str, Any]:
     """Compare hosting capacity across control modes.
 
@@ -327,13 +328,15 @@ def compare_hosting_capacity(
         heuristic_config: Path to heuristic config
         optimization_config: Optional path to optimization config
         pv_scales: PV scale factors to test
-        output_dir: Directory for outputs
+        output_dir: Directory for comparison summary outputs
+        mode_output_dirs: Optional per-mode directories for sweep outputs
 
     Returns:
         Dictionary with comparison results
     """
     output_dir = pathlib.Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    mode_output_dirs = mode_output_dirs or {}
 
     results = {}
 
@@ -346,7 +349,7 @@ def compare_hosting_capacity(
         print(f"Running {mode} sweep...")
         print(f"{'='*60}")
 
-        mode_dir = output_dir / mode
+        mode_dir = pathlib.Path(mode_output_dirs.get(mode, output_dir / mode))
         sweep_df = run_pv_sweep(config, pv_scales, mode_dir)
 
         capacity_info = find_hosting_capacity_interpolated(sweep_df)
@@ -363,7 +366,9 @@ def compare_hosting_capacity(
         print(f"Running optimization sweep...")
         print(f"{'='*60}")
 
-        mode_dir = output_dir / "optimization"
+        mode_dir = pathlib.Path(
+            mode_output_dirs.get("optimization", output_dir / "optimization")
+        )
         sweep_df = run_pv_sweep(optimization_config, pv_scales, mode_dir)
 
         capacity_info = find_hosting_capacity_interpolated(sweep_df)

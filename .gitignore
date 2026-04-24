@@ -23,14 +23,19 @@ ENV/
 
 # Results (large output files — store samples only)
 results/*
+!results/README.md
 !results/baseline/
 !results/baseline/**
 !results/heuristic/
 !results/heuristic/**
 !results/optimization/
 !results/optimization/**
-!results/phase5/
-!results/phase5/**
+!results/comparison/
+!results/comparison/**
+!results/docs/
+!results/docs/**
+!results/dashboard.html
+!results/optimization_dashboard.html
 
 # OS
 .DS_Store

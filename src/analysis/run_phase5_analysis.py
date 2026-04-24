@@ -1,21 +1,21 @@
 """
 src/analysis/run_phase5_analysis.py
 ------------------------------------
-CLI entry point for running Phase 5 analysis end-to-end.
+CLI entry point for running the DERMS analysis end-to-end.
 
-Phase 5 includes:
+The analysis includes:
 1. Running all simulations (baseline, heuristic, optimization)
 2. Calculating and comparing KPIs
 3. Generating comparison plots
 4. Running hosting capacity study
-5. Creating final report package
+5. Creating final report outputs
 
 Usage:
     python -m src.analysis.run_phase5_analysis \\
         --baseline-config config/study_mvp.yaml \\
         --heuristic-config config/study_heuristic.yaml \\
         --optimization-config config/study_optimization.yaml \\
-        --output results/phase5
+        --output results
 """
 
 import argparse
@@ -82,30 +82,6 @@ def _get_available_results_dirs(
         )
 
     return available
-
-
-def _copy_mode_result_snapshots(
-    simulation_results: dict[str, Any],
-    output_dir: pathlib.Path,
-) -> dict[str, str]:
-    """Copy per-mode QSTS CSVs into the packaged output directory."""
-    copied_paths: dict[str, str] = {}
-
-    for mode, meta in simulation_results.items():
-        results_dir = meta.get("results_dir")
-        if not results_dir:
-            continue
-
-        source_csv = pathlib.Path(results_dir) / "qsts_baseline.csv"
-        if not source_csv.exists():
-            continue
-
-        target_name = "qsts_baseline.csv" if mode == "baseline" else f"qsts_{mode}.csv"
-        target_path = output_dir / target_name
-        shutil.copy2(source_csv, target_path)
-        copied_paths[mode] = str(target_path)
-
-    return copied_paths
 
 
 def _export_supporting_docs(
@@ -187,21 +163,21 @@ def run_full_phase5_analysis(
     heuristic_config: str,
     optimization_config: str,
     battery_config: str | None = None,
-    output_dir: str = "results/phase5",
+    output_dir: str = "results",
     run_hosting_capacity: bool = True,
     pv_scales: list[float] | None = None,
     skip_simulations: bool = False,
     generate_dashboard_output: bool = True,
     standards_appendix: str | None = "docs/standards_alignment.md",
 ) -> dict[str, Any]:
-    """Run complete Phase 5 analysis.
+    """Run complete DERMS analysis.
 
     Args:
         baseline_config: Path to baseline study config
         heuristic_config: Path to heuristic study config
         optimization_config: Path to optimization study config
         battery_config: Optional path to battery study config
-        output_dir: Directory for all outputs
+        output_dir: Root directory for mode folders and comparison outputs
         run_hosting_capacity: Whether to run hosting capacity study
         pv_scales: PV scale factors for hosting capacity sweep
         skip_simulations: Skip running simulations if results exist
@@ -226,7 +202,7 @@ def run_full_phase5_analysis(
     }
 
     print(f"\n{'='*70}")
-    print(f"  DERMS MVP — Phase 5 Analysis")
+    print(f"  DERMS MVP — Analysis")
     print(f"{'='*70}")
     print(f"  Output directory: {output_dir}")
     print(f"  Hosting capacity: {'Enabled' if run_hosting_capacity else 'Disabled'}")
@@ -299,10 +275,6 @@ def run_full_phase5_analysis(
                 "results_dir": str(_ROOT / qsts_dir),
             }
 
-    copied_snapshots = _copy_mode_result_snapshots(results["simulations"], output_dir)
-    if copied_snapshots:
-        results["artifacts"]["packaged_results"] = copied_snapshots
-
     # -----------------------------------------------------------------------
     # Step 2: KPI comparison
     # -----------------------------------------------------------------------
@@ -370,14 +342,11 @@ def run_full_phase5_analysis(
             except FileNotFoundError:
                 battery_results = None
 
-        plots_dir = output_dir / "visuals"
-        plots_dir.mkdir(parents=True, exist_ok=True)
-
         # Baseline plots
         print("\n  Generating baseline plots...")
         baseline_plots = create_baseline_plots(
             baseline_results,
-            plots_dir,
+            pathlib.Path(baseline_dir) / "plots",
             v_min=0.95,
             v_max=1.05,
         )
@@ -387,7 +356,7 @@ def run_full_phase5_analysis(
         heuristic_plots = create_comparison_plots(
             baseline_results,
             heuristic_results,
-            plots_dir,
+            pathlib.Path(heuristic_dir) / "plots",
             v_min=0.95,
             v_max=1.05,
         )
@@ -397,7 +366,7 @@ def run_full_phase5_analysis(
         opt_plots = create_comparison_plots(
             baseline_results,
             optimization_results,
-            plots_dir / "optimization_vs_baseline",
+            pathlib.Path(optimization_dir) / "plots",
             v_min=0.95,
             v_max=1.05,
         )
@@ -414,7 +383,7 @@ def run_full_phase5_analysis(
             battery_plots = create_comparison_plots(
                 heuristic_results,
                 battery_results,
-                plots_dir / "battery_vs_heuristic",
+                pathlib.Path(battery_dir) / "plots",
                 v_min=0.95,
                 v_max=1.05,
             )
@@ -430,7 +399,7 @@ def run_full_phase5_analysis(
                 v_max=1.05,
             )
 
-        print(f"\n  Plots saved to: {plots_dir}")
+        print("\n  Plots saved to mode directories")
 
     except Exception as e:
         results["plots"] = {
@@ -453,17 +422,34 @@ def run_full_phase5_analysis(
         print(f"  PV scales: {pv_scales}")
 
         try:
-            hc_dir = output_dir / "hosting_capacity"
+            hc_dir = output_dir / "comparison" / "hosting_capacity"
+            mode_hc_dirs = {
+                "baseline": pathlib.Path(baseline_config).parent.parent / "results" / "baseline" / "hosting_capacity",
+                "heuristic": pathlib.Path(heuristic_config).parent.parent / "results" / "heuristic" / "hosting_capacity",
+                "optimization": pathlib.Path(optimization_config).parent.parent / "results" / "optimization" / "hosting_capacity",
+            }
+            try:
+                results_dirs = _get_available_results_dirs(
+                    results["simulations"],
+                    ["baseline", "heuristic", "optimization"],
+                )
+                mode_hc_dirs = {
+                    mode: pathlib.Path(path) / "hosting_capacity"
+                    for mode, path in results_dirs.items()
+                }
+            except FileNotFoundError:
+                pass
             hc_results = compare_hosting_capacity(
                 baseline_config,
                 heuristic_config,
                 optimization_config,
                 pv_scales,
                 hc_dir,
+                mode_output_dirs=mode_hc_dirs,
             )
 
-            # Generate hosting capacity plots
-            plot_dir = hc_dir / "plots"
+            # Generate hosting capacity comparison plots
+            plot_dir = hc_dir
             plot_dir.mkdir(parents=True, exist_ok=True)
 
             # Comparison bar chart
@@ -544,7 +530,9 @@ def run_full_phase5_analysis(
     print("  STEP 5: Creating Final Summary")
     print("="*70)
 
-    summary_path = output_dir / "phase5_summary.json"
+    summary_dir = output_dir / "comparison"
+    summary_dir.mkdir(parents=True, exist_ok=True)
+    summary_path = summary_dir / "analysis_summary.json"
     with summary_path.open("w") as f:
         json.dump(results, f, indent=2)
 
@@ -552,14 +540,15 @@ def run_full_phase5_analysis(
 
     # Print completion message
     print("\n" + "="*70)
-    print("  Phase 5 Analysis Complete")
+    print("  Analysis Complete")
     print("="*70)
     print(f"\n  Output directory: {output_dir}")
     print(f"\n  Generated files:")
     print(f"    - KPI comparison: {output_dir / 'comparison'}")
-    print(f"    - Plots: {output_dir / 'visuals'}")
+    print("    - Plots: mode directories")
     if run_hosting_capacity:
-        print(f"    - Hosting capacity: {output_dir / 'hosting_capacity'}")
+        print(f"    - Hosting capacity summary: {output_dir / 'comparison' / 'hosting_capacity'}")
+        print("    - Hosting capacity sweeps: mode directories")
     if results.get("battery", {}).get("status") == "success":
         print(f"    - Battery summary: {results['battery']['summary_path']}")
     if results.get("dashboard", {}).get("status") == "success":
@@ -578,9 +567,9 @@ def run_full_phase5_analysis(
 
 
 def main() -> None:
-    """CLI entry point for Phase 5 analysis."""
+    """CLI entry point for DERMS analysis."""
     parser = argparse.ArgumentParser(
-        description="Run Phase 5 analysis for DERMS MVP.",
+        description="Run DERMS analysis across baseline, heuristic, and optimization modes.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -615,8 +604,8 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=str,
-        default="results/phase5",
-        help="Output directory for all results.",
+        default="results",
+        help="Root output directory containing mode folders and comparison outputs.",
     )
 
     parser.add_argument(

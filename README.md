@@ -102,14 +102,14 @@ For the short step-by-step version with starting files, commands, and expected r
 
 ## Advanced Analysis
 
-To run the full packaged analysis:
+To run the full analysis across baseline, heuristic, and optimization modes:
 
 ```bash
 python -m src.analysis.run_phase5_analysis \
     --baseline-config config/study_mvp.yaml \
     --heuristic-config config/study_heuristic.yaml \
     --optimization-config config/study_optimization.yaml \
-    --output results/phase5
+    --output results
 ```
 
 Optional battery-integrated package:
@@ -120,7 +120,7 @@ python -m src.analysis.run_phase5_analysis \
     --heuristic-config config/study_heuristic.yaml \
     --optimization-config config/study_optimization.yaml \
     --battery-config config/study_battery.yaml \
-    --output results/phase5
+    --output results
 ```
 
 ## Test Suite

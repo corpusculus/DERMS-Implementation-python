@@ -4,7 +4,7 @@ src/analysis/run_dashboard.py
 CLI entry point for generating interactive Plotly dashboards from QSTS results.
 
 Usage:
-    python -m src.analysis.run_dashboard --results-dir results/phase5
+    python -m src.analysis.run_dashboard --results-dir results
 """
 
 import argparse

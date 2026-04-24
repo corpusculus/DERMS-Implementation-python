@@ -620,16 +620,16 @@ def _load_results_bundle(results_dir: pathlib.Path) -> dict[str, pd.DataFrame]:
     if results_bundle:
         return results_bundle
 
-    sibling_root = results_dir.parent
-    mode_paths = {
-        "baseline": sibling_root / "baseline" / "qsts_baseline.csv",
-        "heuristic": sibling_root / "heuristic" / "qsts_baseline.csv",
-        "optimization": sibling_root / "optimization" / "qsts_baseline.csv",
-        "battery": sibling_root / "battery" / "qsts_baseline.csv",
-    }
-    for mode, path in mode_paths.items():
-        if path.exists():
-            results_bundle[mode] = pd.read_csv(path)
+    for root in [results_dir, results_dir.parent]:
+        mode_paths = {
+            "baseline": root / "baseline" / "qsts_baseline.csv",
+            "heuristic": root / "heuristic" / "qsts_baseline.csv",
+            "optimization": root / "optimization" / "qsts_baseline.csv",
+            "battery": root / "battery" / "qsts_baseline.csv",
+        }
+        for mode, path in mode_paths.items():
+            if mode not in results_bundle and path.exists():
+                results_bundle[mode] = pd.read_csv(path)
 
     return results_bundle
 
@@ -671,8 +671,8 @@ def _plotly_to_plain_json(value: Any) -> Any:
 def _load_hosting_capacity_summary(results_dir: pathlib.Path) -> dict[str, Any] | None:
     """Load the hosting-capacity summary when present."""
     candidate_paths = [
+        results_dir / "comparison" / "hosting_capacity" / "hosting_capacity_summary.json",
         results_dir / "hosting_capacity" / "hosting_capacity_summary.json",
-        results_dir.parent / "phase5" / "hosting_capacity" / "hosting_capacity_summary.json",
     ]
 
     for path in candidate_paths:
@@ -685,11 +685,13 @@ def _load_hosting_capacity_summary(results_dir: pathlib.Path) -> dict[str, Any] 
 def _get_hosting_capacity_root(results_dir: pathlib.Path) -> pathlib.Path | None:
     """Return the hosting-capacity results root when present."""
     candidate_paths = [
+        results_dir,
         results_dir / "hosting_capacity",
-        results_dir.parent / "phase5" / "hosting_capacity",
     ]
     for path in candidate_paths:
-        if path.exists():
+        if (path / "baseline" / "hosting_capacity" / "sweep_summary.csv").exists():
+            return path
+        if (path / "baseline" / "sweep_summary.csv").exists():
             return path
     return None
 
@@ -705,7 +707,9 @@ def _load_stress_case_bundle(
     summaries: dict[str, pd.DataFrame] = {}
     common_scales: set[float] | None = None
     for mode in ["baseline", "heuristic", "optimization"]:
-        summary_path = hosting_root / mode / "sweep_summary.csv"
+        summary_path = hosting_root / mode / "hosting_capacity" / "sweep_summary.csv"
+        if not summary_path.exists():
+            summary_path = hosting_root / mode / "sweep_summary.csv"
         if not summary_path.exists():
             continue
         df = pd.read_csv(summary_path)
@@ -719,7 +723,15 @@ def _load_stress_case_bundle(
     selected_scale = max(common_scales)
     bundle: dict[str, pd.DataFrame] = {}
     for mode in ["baseline", "heuristic", "optimization"]:
-        csv_path = hosting_root / mode / f"pv_scale_{selected_scale:.2f}" / "qsts_baseline.csv"
+        csv_path = (
+            hosting_root
+            / mode
+            / "hosting_capacity"
+            / f"pv_scale_{selected_scale:.2f}"
+            / "qsts_baseline.csv"
+        )
+        if not csv_path.exists():
+            csv_path = hosting_root / mode / f"pv_scale_{selected_scale:.2f}" / "qsts_baseline.csv"
         if csv_path.exists():
             bundle[mode] = pd.read_csv(csv_path)
 
@@ -770,7 +782,7 @@ def _build_hosting_capacity_cards(hosting_summary: dict[str, Any] | None) -> str
         <div class="kpi-card">
             <div class="kpi-title">Hosting Capacity</div>
             <div class="kpi-value">N/A</div>
-            <div class="kpi-subtitle">Run Phase 5 hosting-capacity study</div>
+            <div class="kpi-subtitle">Run hosting-capacity study</div>
         </div>
         """
 

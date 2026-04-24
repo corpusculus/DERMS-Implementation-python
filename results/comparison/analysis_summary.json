@@ -1,0 +1,65 @@
+{
+  "output_dir": "results",
+  "simulations": {
+    "baseline": {
+      "status": "existing",
+      "results_dir": "/Users/vedranvukosav/Development/DERMS/results/baseline"
+    },
+    "heuristic": {
+      "status": "existing",
+      "results_dir": "/Users/vedranvukosav/Development/DERMS/results/heuristic"
+    },
+    "optimization": {
+      "status": "existing",
+      "results_dir": "/Users/vedranvukosav/Development/DERMS/results/optimization"
+    }
+  },
+  "comparison": {
+    "status": "success",
+    "paths": {
+      "comparison_csv": "results/comparison/kpi_comparison.csv",
+      "comparison_md": "results/comparison/kpi_comparison.md",
+      "improvement_csv": "results/comparison/kpi_improvements.csv",
+      "improvement_md": "results/comparison/kpi_improvements.md"
+    }
+  },
+  "hosting_capacity": {
+    "status": "success",
+    "results_dir": "results/comparison/hosting_capacity",
+    "improvements": {
+      "heuristic_improvement_ratio": 1.0,
+      "optimization_improvement_ratio": 1.3333333333333333
+    }
+  },
+  "plots": {
+    "status": "success",
+    "baseline": {
+      "envelope": "/Users/vedranvukosav/Development/DERMS/results/baseline/plots/plot_voltage_envelope.png",
+      "histogram": "/Users/vedranvukosav/Development/DERMS/results/baseline/plots/plot_voltage_histogram.png",
+      "pv_vs_voltage": "/Users/vedranvukosav/Development/DERMS/results/baseline/plots/plot_pv_vs_voltage.png",
+      "violation_timeline": "/Users/vedranvukosav/Development/DERMS/results/baseline/plots/plot_violation_timeline.png"
+    },
+    "heuristic_comparison": {
+      "voltage_comparison": "/Users/vedranvukosav/Development/DERMS/results/heuristic/plots/plot_voltage_comparison.png",
+      "q_dispatch": "/Users/vedranvukosav/Development/DERMS/results/heuristic/plots/plot_q_dispatch.png",
+      "p_curtailment": "/Users/vedranvukosav/Development/DERMS/results/heuristic/plots/plot_p_curtailment.png",
+      "violation_comparison": "/Users/vedranvukosav/Development/DERMS/results/heuristic/plots/plot_violation_comparison.png"
+    },
+    "optimization_comparison": {
+      "voltage_comparison": "/Users/vedranvukosav/Development/DERMS/results/optimization/plots/plot_voltage_comparison.png",
+      "q_dispatch": "/Users/vedranvukosav/Development/DERMS/results/optimization/plots/plot_q_dispatch.png",
+      "p_curtailment": "/Users/vedranvukosav/Development/DERMS/results/optimization/plots/plot_p_curtailment.png",
+      "violation_comparison": "/Users/vedranvukosav/Development/DERMS/results/optimization/plots/plot_violation_comparison.png"
+    }
+  },
+  "battery": {},
+  "dashboard": {
+    "status": "success",
+    "path": "results/dashboard.html"
+  },
+  "artifacts": {
+    "docs": {
+      "standards_alignment": "results/docs/standards_alignment.md"
+    }
+  }
+}

@@ -125,7 +125,7 @@ def test_phase5_uses_existing_results_for_comparison_and_plots(monkeypatch, tmp_
         baseline_config="config/study_baseline.yaml",
         heuristic_config="config/study_heuristic.yaml",
         optimization_config="config/study_optimization.yaml",
-        output_dir=tmp_path / "phase5",
+        output_dir=tmp_path / "results",
         run_hosting_capacity=False,
         skip_simulations=True,
     )
@@ -172,7 +172,7 @@ def test_phase5_reports_missing_results_clearly(monkeypatch, tmp_path):
         baseline_config="config/study_baseline.yaml",
         heuristic_config="config/study_heuristic.yaml",
         optimization_config="config/study_optimization.yaml",
-        output_dir=tmp_path / "phase5",
+        output_dir=tmp_path / "results",
         run_hosting_capacity=False,
         skip_simulations=True,
     )
