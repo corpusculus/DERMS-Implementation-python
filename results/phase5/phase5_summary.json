@@ -1,0 +1,73 @@
+{
+  "output_dir": "results/phase5",
+  "simulations": {
+    "baseline": {
+      "status": "success",
+      "results_dir": "/Users/vedranvukosav/Development/DERMS/results/baseline",
+      "timesteps": 288
+    },
+    "heuristic": {
+      "status": "success",
+      "results_dir": "/Users/vedranvukosav/Development/DERMS/results/heuristic",
+      "timesteps": 288
+    },
+    "optimization": {
+      "status": "success",
+      "results_dir": "/Users/vedranvukosav/Development/DERMS/results/optimization",
+      "timesteps": 288
+    }
+  },
+  "comparison": {
+    "status": "success",
+    "paths": {
+      "comparison_csv": "results/phase5/comparison/kpi_comparison.csv",
+      "comparison_md": "results/phase5/comparison/kpi_comparison.md",
+      "improvement_csv": "results/phase5/comparison/kpi_improvements.csv",
+      "improvement_md": "results/phase5/comparison/kpi_improvements.md"
+    }
+  },
+  "hosting_capacity": {
+    "status": "success",
+    "results_dir": "results/phase5/hosting_capacity",
+    "improvements": {
+      "heuristic_improvement_ratio": 1.0,
+      "optimization_improvement_ratio": 1.3333333333333333
+    }
+  },
+  "plots": {
+    "status": "success",
+    "baseline": {
+      "envelope": "results/phase5/visuals/plot_voltage_envelope.png",
+      "histogram": "results/phase5/visuals/plot_voltage_histogram.png",
+      "pv_vs_voltage": "results/phase5/visuals/plot_pv_vs_voltage.png",
+      "violation_timeline": "results/phase5/visuals/plot_violation_timeline.png"
+    },
+    "heuristic_comparison": {
+      "voltage_comparison": "results/phase5/visuals/plot_voltage_comparison.png",
+      "q_dispatch": "results/phase5/visuals/plot_q_dispatch.png",
+      "p_curtailment": "results/phase5/visuals/plot_p_curtailment.png",
+      "violation_comparison": "results/phase5/visuals/plot_violation_comparison.png"
+    },
+    "optimization_comparison": {
+      "voltage_comparison": "results/phase5/visuals/optimization_vs_baseline/plot_voltage_comparison.png",
+      "q_dispatch": "results/phase5/visuals/optimization_vs_baseline/plot_q_dispatch.png",
+      "p_curtailment": "results/phase5/visuals/optimization_vs_baseline/plot_p_curtailment.png",
+      "violation_comparison": "results/phase5/visuals/optimization_vs_baseline/plot_violation_comparison.png"
+    }
+  },
+  "battery": {},
+  "dashboard": {
+    "status": "success",
+    "path": "results/phase5/dashboard.html"
+  },
+  "artifacts": {
+    "packaged_results": {
+      "baseline": "results/phase5/qsts_baseline.csv",
+      "heuristic": "results/phase5/qsts_heuristic.csv",
+      "optimization": "results/phase5/qsts_optimization.csv"
+    },
+    "docs": {
+      "standards_alignment": "results/phase5/docs/standards_alignment.md"
+    }
+  }
+}

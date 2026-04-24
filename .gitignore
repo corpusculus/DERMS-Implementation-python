@@ -22,7 +22,15 @@ ENV/
 *.ipynb
 
 # Results (large output files — store samples only)
-results/
+results/*
+!results/baseline/
+!results/baseline/**
+!results/heuristic/
+!results/heuristic/**
+!results/optimization/
+!results/optimization/**
+!results/phase5/
+!results/phase5/**
 
 # OS
 .DS_Store

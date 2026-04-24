@@ -1,0 +1,21 @@
+{
+  "baseline": {
+    "hosting_capacity": 3.0,
+    "max_safe_scale": 3.0,
+    "interpolation_valid": true
+  },
+  "heuristic": {
+    "hosting_capacity": 3.0,
+    "max_safe_scale": 3.0,
+    "interpolation_valid": true
+  },
+  "optimization": {
+    "hosting_capacity": 4.0,
+    "max_safe_scale": 4.0,
+    "interpolation_valid": false
+  },
+  "improvements": {
+    "heuristic_improvement_ratio": 1.0,
+    "optimization_improvement_ratio": 1.3333333333333333
+  }
+}

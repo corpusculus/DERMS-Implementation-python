@@ -1,0 +1,12 @@
+metric,value
+commands_sent,276
+commands_applied,3444
+commands_partial,0
+commands_failed,0
+commands_out_of_range,0
+unique_ders_controlled,3
+top_controlled_der,pv_008_652
+total_reactive_energy_kvarh,4030.0695042263437
+total_curtailed_energy_kwh,970.2766275376696
+avg_voltage_delta_pu,-0.025619844505432546
+max_voltage_improvement_pu,0.0501709024346004
